@@ -4,86 +4,80 @@
 #include <numeric>
 #include <algorithm>
 #include <iomanip>
+#include <random>
 
-using std::cout;
-using std::cin;
-using std::string;
-using std::vector;
-using std::accumulate;
-using std::sort;
-using std::setw;
-using std::left;
-using std::fixed;
-using std::setprecision;
-using std::endl;
+using namespace std;
 
 class Studentas {
-    string vardas;
-    string pavarde;
-    vector<int> paz;
+    string vardas, pavarde;
+    vector<int> namuDarbai;
     int egzaminas;
-    double rezultatas_vid;
-    double rezultatas_med;
-
+    double galVid, galMed;
 public:
     Studentas() {
-        int p;
+        vardas = ""; pavarde = ""; egzaminas = 0; galVid = 0; galMed = 0;
+    }
+    void ivesti() {
+        cout << "Vardas Pavarde: ";
         cin >> vardas >> pavarde;
-        while (true) {
-            cin >> p;
-            if (p == -1) break;
-            paz.push_back(p);
-        }
+        int paz;
+        cout << "Namu darbai (-1 pabaigai): ";
+        namuDarbai.clear();
+        while (cin >> paz && paz != -1)
+            namuDarbai.push_back(paz);
+        cout << "Egzaminas: ";
         cin >> egzaminas;
-        skaiciuotiRezultatus();
+        skaiciuoti();
     }
-
-    void skaiciuotiRezultatus() {
-        double vidurkis = paz.empty() ? 0 : static_cast<double>(accumulate(paz.begin(), paz.end(), 0)) / paz.size();
-        rezultatas_vid = vidurkis * 0.4 + egzaminas * 0.6;
-        sort(paz.begin(), paz.end());
-        double mediana = 0.0;
-        size_t dydis = paz.size();
-        if (dydis == 0) mediana = 0;
-        else if (dydis % 2 == 0) mediana = (paz[dydis / 2 - 1] + paz[dydis / 2]) / 2.0;
-        else mediana = paz[dydis / 2];
-        rezultatas_med = mediana * 0.4 + egzaminas * 0.6;
+    void generuoti(mt19937 &gen) {
+        uniform_int_distribution<> d(0,10);
+        vardas = "V" + to_string(d(gen));
+        pavarde = "P" + to_string(d(gen));
+        int n = d(gen)%10 +1;
+        namuDarbai.clear();
+        for (int i=0;i<n;i++) namuDarbai.push_back(d(gen));
+        egzaminas = d(gen);
+        skaiciuoti();
     }
-
-    string GetVar() const { return vardas; }
-    string GetPav() const { return pavarde; }
-    double GetVidRez() const { return rezultatas_vid; }
-    double GetMedRez() const { return rezultatas_med; }
+    void skaiciuoti() {
+        if (namuDarbai.empty()) {galVid=galMed=0; return;}
+        double vid = accumulate(namuDarbai.begin(), namuDarbai.end(),0.0)/namuDarbai.size();
+        galVid = vid*0.4 + egzaminas*0.6;
+        vector<int> t = namuDarbai;
+        sort(t.begin(), t.end());
+        int n = t.size();
+        double med = (n%2==0) ? (t[n/2-1]+t[n/2])/2.0 : t[n/2];
+        galMed = med*0.4 + egzaminas*0.6;
+    }
+    string getV()const{return vardas;}
+    string getP()const{return pavarde;}
+    double getVid()const{return galVid;}
+    double getMed()const{return galMed;}
 };
 
-std::ostream& operator<<(std::ostream& output, const Studentas& T) {
-    output << setw(12) << T.GetPav()
-           << setw(12) << T.GetVar()
-           << setw(20) << fixed << setprecision(2) << T.GetVidRez()
-           << setw(20) << fixed << setprecision(2) << T.GetMedRez()
-           << endl;
-    return output;
+ostream& operator<<(ostream &o, const Studentas &s) {
+    o << setw(12) << s.getP() << setw(12) << s.getV()
+      << setw(20) << fixed << setprecision(2) << s.getVid()
+      << setw(20) << fixed << setprecision(2) << s.getMed() << "\n";
+    return o;
 }
 
 int main() {
-    vector<Studentas> grupe;
-    for (int i = 0; i < 3; i++) {
+    vector<Studentas> v;
+    int a,b;
+    cout << "1 - ivesti, 2 - generuoti: ";
+    cin >> a;
+    cout << "Kiek studentu: ";
+    cin >> b;
+    mt19937 gen(random_device{}());
+    for (int i=0; i<b; i++) {
         Studentas s;
-        grupe.push_back(s);
+        if (a==1) s.ivesti();
+        else s.generuoti(gen);
+        v.push_back(s);
     }
-
-    cout << left
-         << setw(12) << "Pavardė"
-         << setw(12) << "Vardas"
-         << setw(20) << "Galutinis (Vid.)"
-         << setw(20) << "Galutinis (Med.)"
-         << endl;
-
-    cout << "------------------------------------------------------------" << endl;
-
-    for (const auto& studentas : grupe) {
-        cout << studentas;
-    }
-
-    return 0;
+    cout << left << setw(12) << "Pavarde" << setw(12) << "Vardas"
+         << setw(20) << "Galutinis (Vid.)" << setw(20) << "Galutinis (Med.)" << "\n";
+    cout << "------------------------------------------------------------\n";
+    for (auto &x : v) cout << x;
 }
