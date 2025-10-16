@@ -1,0 +1,89 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <numeric>
+#include <algorithm>
+#include <iomanip>
+
+using std::cout;
+using std::cin;
+using std::string;
+using std::vector;
+using std::accumulate;
+using std::sort;
+using std::setw;
+using std::left;
+using std::fixed;
+using std::setprecision;
+using std::endl;
+
+class Studentas {
+    string vardas;
+    string pavarde;
+    vector<int> paz;
+    int egzaminas;
+    double rezultatas_vid;
+    double rezultatas_med;
+
+public:
+    Studentas() {
+        int p;
+        cin >> vardas >> pavarde;
+        while (true) {
+            cin >> p;
+            if (p == -1) break;
+            paz.push_back(p);
+        }
+        cin >> egzaminas;
+        skaiciuotiRezultatus();
+    }
+
+    void skaiciuotiRezultatus() {
+        double vidurkis = paz.empty() ? 0 : static_cast<double>(accumulate(paz.begin(), paz.end(), 0)) / paz.size();
+        rezultatas_vid = vidurkis * 0.4 + egzaminas * 0.6;
+        sort(paz.begin(), paz.end());
+        double mediana = 0.0;
+        size_t dydis = paz.size();
+        if (dydis == 0) mediana = 0;
+        else if (dydis % 2 == 0) mediana = (paz[dydis / 2 - 1] + paz[dydis / 2]) / 2.0;
+        else mediana = paz[dydis / 2];
+        rezultatas_med = mediana * 0.4 + egzaminas * 0.6;
+    }
+
+    string GetVar() const { return vardas; }
+    string GetPav() const { return pavarde; }
+    double GetVidRez() const { return rezultatas_vid; }
+    double GetMedRez() const { return rezultatas_med; }
+};
+
+std::ostream& operator<<(std::ostream& output, const Studentas& T) {
+    output << setw(12) << T.GetPav()
+           << setw(12) << T.GetVar()
+           << setw(20) << fixed << setprecision(2) << T.GetVidRez()
+           << setw(20) << fixed << setprecision(2) << T.GetMedRez()
+           << endl;
+    return output;
+}
+
+int main() {
+    vector<Studentas> grupe;
+    for (int i = 0; i < 3; i++) {
+        Studentas s;
+        grupe.push_back(s);
+    }
+
+    cout << left
+         << setw(12) << "Pavardė"
+         << setw(12) << "Vardas"
+         << setw(20) << "Galutinis (Vid.)"
+         << setw(20) << "Galutinis (Med.)"
+         << endl;
+
+    cout << "------------------------------------------------------------" << endl;
+
+    for (const auto& studentas : grupe) {
+        cout << studentas;
+    }
+
+    return 0;
+}
