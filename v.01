@@ -6,53 +6,82 @@
 #include <iomanip>
 #include <random>
 
-using namespace std;
+// Naudojame tik konkrečius using'us
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
+using std::accumulate;
+using std::sort;
+using std::fixed;
+using std::left;
+using std::mt19937;
+using std::random_device;
+using std::uniform_int_distribution;
+using std::setw;
+using std::setprecision;
+using std::ostream;
+using std::to_string;
 
 class Studentas {
     string vardas, pavarde;
     vector<int> namuDarbai;
     int egzaminas;
     double galVid, galMed;
+
 public:
     Studentas() {
         vardas = ""; pavarde = ""; egzaminas = 0; galVid = 0; galMed = 0;
     }
+
     void ivesti() {
         cout << "Vardas Pavarde: ";
         cin >> vardas >> pavarde;
+
         int paz;
         cout << "Namu darbai (-1 pabaigai): ";
         namuDarbai.clear();
+
         while (cin >> paz && paz != -1)
             namuDarbai.push_back(paz);
+
         cout << "Egzaminas: ";
         cin >> egzaminas;
         skaiciuoti();
     }
+
     void generuoti(mt19937 &gen) {
-        uniform_int_distribution<> d(0,10);
+        uniform_int_distribution<> d(0, 10);
         vardas = "V" + to_string(d(gen));
         pavarde = "P" + to_string(d(gen));
-        int n = d(gen)%10 +1;
+        int n = d(gen) % 10 + 1;
         namuDarbai.clear();
-        for (int i=0;i<n;i++) namuDarbai.push_back(d(gen));
+        for (int i = 0; i < n; i++) namuDarbai.push_back(d(gen));
         egzaminas = d(gen);
         skaiciuoti();
     }
+
     void skaiciuoti() {
-        if (namuDarbai.empty()) {galVid=galMed=0; return;}
-        double vid = accumulate(namuDarbai.begin(), namuDarbai.end(),0.0)/namuDarbai.size();
-        galVid = vid*0.4 + egzaminas*0.6;
+        if (namuDarbai.empty()) {
+            galVid = galMed = 0;
+            return;
+        }
+
+        double vid = accumulate(namuDarbai.begin(), namuDarbai.end(), 0.0) / namuDarbai.size();
+        galVid = vid * 0.4 + egzaminas * 0.6;
+
         vector<int> t = namuDarbai;
         sort(t.begin(), t.end());
         int n = t.size();
-        double med = (n%2==0) ? (t[n/2-1]+t[n/2])/2.0 : t[n/2];
-        galMed = med*0.4 + egzaminas*0.6;
+        double med = (n % 2 == 0) ? (t[n / 2 - 1] + t[n / 2]) / 2.0 : t[n / 2];
+        galMed = med * 0.4 + egzaminas * 0.6;
     }
-    string getV()const{return vardas;}
-    string getP()const{return pavarde;}
-    double getVid()const{return galVid;}
-    double getMed()const{return galMed;}
+
+    string getV() const { return vardas; }
+    string getP() const { return pavarde; }
+    double getVid() const { return galVid; }
+    double getMed() const { return galMed; }
 };
 
 ostream& operator<<(ostream &o, const Studentas &s) {
@@ -64,20 +93,25 @@ ostream& operator<<(ostream &o, const Studentas &s) {
 
 int main() {
     vector<Studentas> v;
-    int a,b;
+    int a, b;
     cout << "1 - ivesti, 2 - generuoti: ";
     cin >> a;
     cout << "Kiek studentu: ";
     cin >> b;
+
     mt19937 gen(random_device{}());
-    for (int i=0; i<b; i++) {
+
+    for (int i = 0; i < b; i++) {
         Studentas s;
-        if (a==1) s.ivesti();
+        if (a == 1) s.ivesti();
         else s.generuoti(gen);
         v.push_back(s);
     }
+
     cout << left << setw(12) << "Pavarde" << setw(12) << "Vardas"
          << setw(20) << "Galutinis (Vid.)" << setw(20) << "Galutinis (Med.)" << "\n";
     cout << "------------------------------------------------------------\n";
-    for (auto &x : v) cout << x;
+
+    for (auto &x : v)
+        cout << x;
 }
