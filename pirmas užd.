@@ -1,0 +1,183 @@
+
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <vector>
+#include <limits>
+
+using std::cout;
+using std::cin;
+using std::string;
+using std::vector;
+using std::istream;
+using std::ostream;
+
+class studentas {
+private:
+    string var, pav;
+    vector<int> paz;
+    int egzam;
+    double gal;
+
+public:
+    // 1. Paprastas konstruktorius
+    studentas() {
+        var = "";
+        pav = "";
+        egzam = 0;
+        gal = 0;
+    }
+
+    // 2. Konstruktorius su parametrais
+    studentas(string v, string p, vector<int> pazim, int e) {
+        var = v;
+        pav = p;
+        paz = pazim;
+        egzam = e;
+        gal = 0;
+    }
+
+    // 3. Kopijavimo konstruktorius
+    studentas(const studentas& B) {
+        var = B.var;
+        pav = B.pav;
+        paz = B.paz;
+        egzam = B.egzam;
+        gal = B.gal;
+    }
+
+    // 4. Kopijavimo priskyrimo operatorius
+    studentas& operator=(const studentas& B) {
+        if (this != &B) {
+            var = B.var;
+            pav = B.pav;
+            paz = B.paz;
+            egzam = B.egzam;
+            gal = B.gal;
+        }
+        return *this;
+    }
+
+    // 5. Destruktorius
+    ~studentas() {
+    }
+
+    // 6. Duomenų įvedimo operatorius
+    friend istream& operator>>(istream& in, studentas& s) {
+        cout << "Iveskite studento varda: ";
+        in >> s.var;
+
+        cout << "Iveskite studento pavarde: ";
+        in >> s.pav;
+
+        s.paz.clear();
+
+        int n;
+        char pasirinkimas;
+
+        while (true) {
+            cout << "Iveskite namu darbu pazymi (1-10): ";
+            in >> n;
+
+            while (n < 1 || n > 10 || in.fail()) {
+                in.clear();
+                in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cout << "Netinkamas pazymys. Iveskite skaiciu nuo 1 iki 10: ";
+                in >> n;
+            }
+
+            s.paz.push_back(n);
+
+            cout << "Ar ivesite dar viena pazymi? (t/n): ";
+            in >> pasirinkimas;
+
+            if (pasirinkimas == 'n' || pasirinkimas == 'N') {
+                break;
+            }
+        }
+
+        cout << "Iveskite egzamino pazymi (1-10): ";
+        in >> s.egzam;
+
+        while (in.fail() || s.egzam < 1 || s.egzam > 10) {
+            in.clear();
+            in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Netinkamas pazymys. Iveskite skaiciu nuo 1 iki 10: ";
+            in >> s.egzam;
+        }
+
+        s.gal = 0;
+
+        return in;
+    }
+
+    // 7. Duomenu isvedimo operatorius
+    friend ostream& operator<<(ostream& out, const studentas& s) {
+        out << std::left
+            << std::setw(18) << s.pav
+            << std::setw(18) << s.var
+            << std::right
+            << std::fixed << std::setprecision(2)
+            << s.gal;
+
+        return out;
+    }
+
+    // 8. Galutinio pazymio skaiciavimas pagal vidurki
+    void skaiciuotiGalutini() {
+        double suma = 0;
+
+        for (int pazymys : paz) {
+            suma += pazymys;
+        }
+
+        double vidurkis = 0;
+
+        if (!paz.empty()) {
+            vidurkis = suma / paz.size();
+        }
+
+        gal = 0.4 * vidurkis + 0.6 * egzam;
+    }
+};
+
+int main() {
+    int kiek;
+
+    cout << "Kiek studentu norite ivesti? ";
+    cin >> kiek;
+
+    while (cin.fail() || kiek < 1) {
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cout << "Iveskite teigiama studentu skaiciu: ";
+        cin >> kiek;
+    }
+
+    vector<studentas> studentai;
+
+    for (int i = 0; i < kiek; i++) {
+        cout << "\n--- " << i + 1 << " studentas ---\n";
+
+        studentas s;
+        cin >> s;
+
+        s.skaiciuotiGalutini();
+
+        studentai.push_back(s);
+    }
+
+    cout << "\n";
+    cout << std::left
+         << std::setw(18) << "Pavarde"
+         << std::setw(18) << "Vardas"
+         << "Galutinis (Vid.)\n";
+
+    cout << "--------------------------------------------------\n";
+
+    for (const studentas& s : studentai) {
+        cout << s << "\n";
+    }
+
+    return 0;
+}
